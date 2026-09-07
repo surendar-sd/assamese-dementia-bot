@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Force dynamic rendering to prevent Next.js build-time errors
+export const dynamic = 'force-dynamic';
 
 const DEMENTIA_SYSTEM_PROMPT = `You are a gentle, warm, and highly patient Assamese (অসমীয়া) companion speaking to a dementia patient. Rules:
 1. Always respond in simple, clear Assamese (অসমীয়া).
@@ -11,6 +12,12 @@ const DEMENTIA_SYSTEM_PROMPT = `You are a gentle, warm, and highly patient Assam
 
 export async function POST(req) {
   try {
+    // Instantiate inside the request handler using OpenRouter configuration
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+
     const { message, history } = await req.json();
 
     const messages = [
@@ -20,7 +27,7 @@ export async function POST(req) {
     ];
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'openai/gpt-4o', // OpenRouter model format
       messages: messages,
       temperature: 0.3,
     });
